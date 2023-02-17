@@ -1,0 +1,84 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: motd-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: motd-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: motd-service
+        version: v1
+      name: motd-service
+    spec:
+      containers:
+      - image: ghcr.io/tobias-neubert/motd-service:fcc2418-51@sha256:cd93a65e53c431fd228c17fc72327c869e1fc6fe996e2716c5873605527ca883
+        imagePullPolicy: IfNotPresent
+        name: motd-service
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: motd-service
+  name: motd-service
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 8080
+  selector:
+    app: motd-service
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: training-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - motd.neubert
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: training-credential
+      mode: SIMPLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: motd
+spec:
+  gateways:
+  - training-gateway
+  hosts:
+  - motd.neubert
+  http:
+  - match:
+    - uri:
+        prefix: /motd
+    route:
+    - destination:
+        host: motd-service
+        port:
+          number: 8080
