@@ -25,7 +25,7 @@ spec:
       name: motd-service
     spec:
       containers:
-      - image: ghcr.io/tobias-neubert/motd-service:45f785a-53@sha256:b85f7c3f23602a11e06ca8bbbdaf94eba1f392a8b6baa65a9bb9cefc1b5ce400
+      - image: ghcr.io/tobias-neubert/motd-service:fd0d7bf-54@sha256:536d1f2bdf46a6e5f730a4f3534d4df3cfa3c54425a97ae95b7750f079454c13
         imagePullPolicy: IfNotPresent
         name: motd-service
         ports:
